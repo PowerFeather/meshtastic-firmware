@@ -70,6 +70,13 @@ class NimbleBluetoothFromRadioCallback : public NimBLECharacteristicCallbacks
 
 class NimbleBluetoothServerCallback : public NimBLEServerCallbacks
 {
+#ifdef ARDUINO_ESP32S3_POWERFEATHER
+    virtual void onConnect(NimBLEServer* pServer, ble_gap_conn_desc* desc)
+    {
+        pServer->updateConnParams(desc->conn_handle, 40, 120, 0, 75);
+    }
+#endif
+
     virtual uint32_t onPassKeyRequest()
     {
         uint32_t passkey = config.bluetooth.fixed_pin;
@@ -247,6 +254,10 @@ void NimbleBluetooth::startAdvertising()
 {
     NimBLEAdvertising *pAdvertising = NimBLEDevice::getAdvertising();
     pAdvertising->reset();
+#ifdef ARDUINO_ESP32S3_POWERFEATHER
+    pAdvertising->setMinInterval(3000);
+    pAdvertising->setMaxInterval(5000);
+#endif
     pAdvertising->addServiceUUID(MESH_SERVICE_UUID);
     pAdvertising->addServiceUUID(NimBLEUUID((uint16_t)0x180f)); // 0x180F is the Battery Service
     pAdvertising->start(0);
