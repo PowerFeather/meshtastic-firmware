@@ -78,6 +78,10 @@ NRF52Bluetooth *nrf52Bluetooth = nullptr;
 #include "SX1280Interface.h"
 #include "detect/LoRaRadioType.h"
 
+#if USE_DUMMY
+#include "DummyInterface.h"
+#endif
+
 #ifdef ARCH_STM32WL
 #include "STM32WLE5JCInterface.h"
 #endif
@@ -1012,6 +1016,20 @@ void setup()
         } else {
             LOG_INFO("SX1280 Radio init succeeded, using SX1280 radio\n");
             radioType = SX1280_RADIO;
+        }
+    }
+#endif
+
+#if defined(USE_DUMMY)
+    if (!rIf) {
+        rIf = new DummyInterface(RadioLibHAL, LORA_CS, LORA_DIO1, LORA_RESET, LORA_DIO2);
+        if (!rIf->init()) {
+            LOG_WARN("Failed to find dummy radio\n");
+            delete rIf;
+            rIf = NULL;
+        } else {
+            LOG_INFO("Dummy radio init succeeded, using dummy radio\n");
+            radioType = SX1268_RADIO;
         }
     }
 #endif
