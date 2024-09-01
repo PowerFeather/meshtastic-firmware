@@ -38,6 +38,7 @@
 #include "target_specific.h"
 #include <memory>
 #include <utility>
+
 // #include <driver/rtc_io.h>
 
 #ifdef ARCH_ESP32
@@ -118,6 +119,14 @@ AudioThread *audioThread = nullptr;
 
 #if defined(TCXO_OPTIONAL)
 float tcxoVoltage = SX126X_DIO3_TCXO_VOLTAGE; // if TCXO is optional, put this here so it can be changed further down.
+#endif
+
+#if CONFIG_PM_ENABLE
+#include "esp_pm.h"
+#endif
+
+#ifdef ARDUINO_ESP32S3_POWERFEATHER
+#include "PowerFeather.h"
 #endif
 
 using namespace concurrency;
@@ -273,6 +282,28 @@ void setup()
     serialSinceMsec = millis();
 
     LOG_INFO("\n\n//\\ E S H T /\\ S T / C\n\n");
+
+#ifdef ARDUINO_ESP32S3_POWERFEATHER
+    if (PowerFeather::Board.init(0) == PowerFeather::Result::Ok)
+    {
+        LOG_INFO("PowerFeather initalization ok");
+    }
+#endif
+
+#if CONFIG_PM_ENABLE && defined(ARDUINO_ESP32S3_POWERFEATHER)
+    esp_pm_config_esp32s3_t pm_config = {
+            .max_freq_mhz = 80,
+            .min_freq_mhz = 10,
+            .light_sleep_enable = true
+    };
+
+    if (esp_pm_configure(&pm_config) == ESP_OK)
+    {
+        esp_sleep_pd_config(ESP_PD_DOMAIN_VDDSDIO, ESP_PD_OPTION_ON);
+        esp_sleep_pd_config(ESP_PD_DOMAIN_VDDSDIO, ESP_PD_OPTION_OFF);
+        LOG_INFO("PM config succeeded");
+    }
+#endif
 
     initDeepSleep();
 
@@ -600,6 +631,10 @@ void setup()
 #ifdef LED_PIN
     pinMode(LED_PIN, OUTPUT);
     digitalWrite(LED_PIN, LED_STATE_ON); // turn on for now
+#if CONFIG_PM_SLP_DISABLE_GPIO && defined(ARDUINO_ESP32S3_POWERFEATHER)
+    gpio_sleep_sel_dis(static_cast<gpio_num_t>(LED_PIN));
+    gpio_sleep_set_direction(static_cast<gpio_num_t>(LED_PIN), GPIO_MODE_OUTPUT);
+#endif
 #endif
 
     // Hello
