@@ -79,7 +79,7 @@ NRF52Bluetooth *nrf52Bluetooth = nullptr;
 #include "SX1280Interface.h"
 #include "detect/LoRaRadioType.h"
 
-#if USE_DUMMY
+#ifdef USE_DUMMY
 #include "DummyInterface.h"
 #endif
 
@@ -303,6 +303,8 @@ void setup()
         esp_sleep_pd_config(ESP_PD_DOMAIN_VDDSDIO, ESP_PD_OPTION_OFF);
         LOG_INFO("PM config succeeded");
     }
+#else
+#error "PM NOT ENABLED!"
 #endif
 
     initDeepSleep();
@@ -1057,7 +1059,7 @@ void setup()
 
 #if defined(USE_DUMMY)
     if (!rIf) {
-        rIf = new DummyInterface(RadioLibHAL, LORA_CS, LORA_DIO1, LORA_RESET, LORA_DIO2);
+        rIf = new DummyInterface(RadioLibHAL, SX126X_CS, SX126X_DIO1, SX126X_RESET, SX126X_BUSY);
         if (!rIf->init()) {
             LOG_WARN("Failed to find dummy radio\n");
             delete rIf;

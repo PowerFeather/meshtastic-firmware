@@ -9,9 +9,8 @@
 #define USE_SX1262
 
 #define LORA_DIO0 RADIOLIB_NC // a No connect on the SX1262 module
-#define LORA_RESET A2
-#define LORA_DIO1 A4
-#define LORA_DIO2 D13
+#define LORA_RESET D8
+#define LORA_DIO1 D10
 
 #define LORA_SCK SCK
 #define LORA_MISO MISO
@@ -21,8 +20,7 @@
 #define SX126X_CS LORA_CS
 #define SX126X_DIO1 LORA_DIO1
 #define SX126X_RESET LORA_RESET
-#define SX126X_BUSY A3
-#define SX126X_RXEN D10
-#define SX126X_TXEN D9
+#define SX126X_BUSY D12
 
+#define SX126X_DIO2_AS_RF_SWITCH
 #define SX126X_DIO3_TCXO_VOLTAGE 1.8
